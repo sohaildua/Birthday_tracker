@@ -17,7 +17,7 @@ defmodule BirthdayTracker do
       iex> BirthdayTracker.start()
   """
   def enter_your_name do
-    IO.gets("Anime Character Name Please: ") |> String.trim()
+    IO.gets("Anime Character Name Please: ") |> String.trim() |> check_exit()
   end
 
   def check_valid_name() do
@@ -30,12 +30,13 @@ defmodule BirthdayTracker do
       true -> name
     end
   end
+
   def enter_your_age do
-    IO.gets("Anime Character agee Please: ") |> String.trim()
+    IO.gets("Anime Character age Please: ") |> String.trim() |> check_exit()
   end
 
   def check_valid_age() do
-    age = enter_your_name()
+    age = enter_your_age()
     cond do
       age == :exit -> :exit
       age == "" ->
@@ -55,8 +56,40 @@ defmodule BirthdayTracker do
     end
   end
 
-  def add_birthdays do
-    check_valid_name()
-    check_valid_age()
+  def enter_your_anime_name do
+    IO.gets("Anime Name Please: ") |> String.trim() |> check_exit()
   end
+
+  def check_valid_anime_name() do
+    animeName = enter_your_anime_name()
+    cond do
+      animeName == :exit -> :exit
+      animeName == "" ->
+        IO.puts("Name of the Anime cannot be empty.Use some more chi")
+        check_valid_anime_name()
+      true -> animeName
+    end
+  end
+
+  def add_birthdays do
+    case check_valid_name() do
+      :exit -> IO.puts("Ooooo why")
+      name ->
+        case check_valid_age() do
+         :exit -> IO.puts("Ooooo why")
+          age ->
+          case check_valid_anime_name() do
+            :exit -> IO.puts("Ooooo why")
+           animeName ->
+           IO.puts("#{name},#{age}, #{animeName} ")
+           add_birthdays()
+          end
+        end
+    end
+  end
+
+    # Handles Ctrl+D and "exit" input
+  defp check_exit(nil), do: "exit"
+  defp check_exit("exit\n"), do: :exit
+  defp check_exit(input), do: input
 end
