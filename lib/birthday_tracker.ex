@@ -1,5 +1,8 @@
 defmodule BirthdayTracker do
+
   def start do
+      ListAgent.start_link_list()
+
     IO.puts("Welcome! (Type 'exit' to quit at any time)")
     add_birthdays()
   end
@@ -15,15 +18,16 @@ defmodule BirthdayTracker do
 
       iex> BirthdayTracker.start()
   """
-  def enter_your_name do
+
+  defp enter_your_name do
     IO.gets("Anime Character Name Please: ") |> String.trim() |> check_exit()
   end
 
-  def check_valid_name() do
+  defp check_valid_name() do
     name = enter_your_name()
 
     cond do
-      name == :exit ->
+      name == :exit or name == "exit"->
         :exit
 
       name == "" ->
@@ -35,15 +39,15 @@ defmodule BirthdayTracker do
     end
   end
 
-  def enter_your_age do
+  defp enter_your_age do
     IO.gets("Anime Character age Please: ") |> String.trim() |> check_exit()
   end
 
-  def check_valid_age() do
+  defp check_valid_age() do
     age = enter_your_age()
 
     cond do
-      age == :exit ->
+      age == :exit or age =="exit" ->
         :exit
 
       age == "" ->
@@ -59,22 +63,22 @@ defmodule BirthdayTracker do
     end
   end
 
-  def detect_type(str) do
+  defp detect_type(str) do
     case Integer.parse(str) do
       {_, ""} -> :number
       _ -> :text
     end
   end
 
-  def enter_your_anime_name do
+  defp enter_your_anime_name do
     IO.gets("Anime Name Please: ") |> String.trim() |> check_exit()
   end
 
-  def check_valid_anime_name() do
+  defp check_valid_anime_name() do
     animeName = enter_your_anime_name()
 
     cond do
-      animeName == :exit ->
+      animeName == :exit or animeName=="exit"->
         :exit
 
       animeName == "" ->
@@ -86,7 +90,7 @@ defmodule BirthdayTracker do
     end
   end
 
-  def enter_your_anime_gender do
+  defp enter_your_anime_gender do
     gender =
       IO.gets("Anime character Gender - Male(M) or Female(F) or other(O): ")
       |> String.downcase()
@@ -97,11 +101,12 @@ defmodule BirthdayTracker do
       gender == "m" or gender == "male" -> :male
       gender == "f" or gender == "female" -> :female
       gender == "o" or gender == "other" -> :other
+      gender == "exit" -> :exit
       true -> :invalid
     end
   end
 
-  def check_valid_anime_gender() do
+  defp check_valid_anime_gender() do
     gender = enter_your_anime_gender()
 
     cond do
@@ -137,23 +142,23 @@ defmodule BirthdayTracker do
                 IO.puts("Ooooo why")
 
               animeName ->
-              case check_valid_anime_gender() do
-                :exit ->
-                IO.puts("Ooooo why")
+                case check_valid_anime_gender() do
+                  :exit ->
+                    IO.puts("Ooooo why")
 
-                gender->
-
-                IO.puts("#{name},#{age}, #{animeName} #{gender}")
-                add_birthdays()
-
-              end
+                  gender ->
+                    anime_data = %{name: name, age: age, animeName: animeName, gender: gender}
+                    IO.inspect(anime_data)
+                    ListAgent.add(anime_data)
+                    IO.inspect(ListAgent.get_all())
+                    start()
+                end
             end
         end
     end
   end
 
   # Handles Ctrl+D and "exit" input
-  defp check_exit(nil), do: "exit"
-  defp check_exit("exit\n"), do: :exit
   defp check_exit(input), do: input
+
 end
