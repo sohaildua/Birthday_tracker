@@ -1,8 +1,7 @@
 defmodule BirthdayTracker do
-
   def start do
-      ListAgent.start_link_list()
-
+    BirthdayTrackerData.start()
+    ListAgent.start_link_list()
     IO.puts("Welcome! (Type 'exit' to quit at any time)")
     add_birthdays()
   end
@@ -27,7 +26,7 @@ defmodule BirthdayTracker do
     name = enter_your_name()
 
     cond do
-      name == :exit or name == "exit"->
+      name == :exit or name == "exit" ->
         :exit
 
       name == "" ->
@@ -47,7 +46,7 @@ defmodule BirthdayTracker do
     age = enter_your_age()
 
     cond do
-      age == :exit or age =="exit" ->
+      age == :exit or age == "exit" ->
         :exit
 
       age == "" ->
@@ -78,7 +77,7 @@ defmodule BirthdayTracker do
     animeName = enter_your_anime_name()
 
     cond do
-      animeName == :exit or animeName=="exit"->
+      animeName == :exit or animeName == "exit" ->
         :exit
 
       animeName == "" ->
@@ -127,38 +126,54 @@ defmodule BirthdayTracker do
   end
 
   def add_birthdays do
-    case check_valid_name() do
-      :exit ->
-        IO.puts("Ooooo why")
+    count = ListAgent.count_counter()
 
-      name ->
-        case check_valid_age() do
-          :exit ->
-            IO.puts("Ooooo why")
+    IO.puts(count)
 
-          age ->
-            case check_valid_anime_name() do
-              :exit ->
-                IO.puts("Ooooo why")
+    if count <= 2 do
+      case check_valid_name() do
+        :exit ->
+          IO.puts("Ooooo why")
 
-              animeName ->
-                case check_valid_anime_gender() do
-                  :exit ->
-                    IO.puts("Ooooo why")
+        name ->
+          case check_valid_age() do
+            :exit ->
+              IO.puts("Ooooo why")
 
-                  gender ->
-                    anime_data = %{name: name, age: age, animeName: animeName, gender: gender}
-                    IO.inspect(anime_data)
-                    ListAgent.add(anime_data)
-                    IO.inspect(ListAgent.get_all())
-                    start()
-                end
-            end
-        end
+            age ->
+              case check_valid_anime_name() do
+                :exit ->
+                  IO.puts("Ooooo why")
+
+                animeName ->
+                  case check_valid_anime_gender() do
+                    :exit ->
+                      IO.puts("Ooooo why")
+
+                    gender ->
+                      anime_data = %{
+                        id: count+1,
+                        name: name,
+                        age: age,
+                        animeName: animeName,
+                        gender: gender
+                      }
+
+                      IO.inspect(anime_data)
+                      ListAgent.add(anime_data)
+                      add_birthdays()
+                  end
+              end
+          end
+      end
+    else
+      IO.inspect(ListAgent.get_all())
+      BirthdayTrackerData.add_anime_birthday_data(ListAgent.get_all())
+
+      BirthdayTrackerData.get_anime_all_data()
     end
   end
 
   # Handles Ctrl+D and "exit" input
   defp check_exit(input), do: input
-
 end
