@@ -1,22 +1,26 @@
 defmodule BirthdayTracker do
-  def start do
+  def start(conn) do
     BirthdayTrackerData.start()
     ListAgent.start_link_list()
     IO.puts("Welcome! (Type 'exit' to quit at any time)")
-    add_birthdays()
+    add_birthdays(conn)
   end
 
   @moduledoc """
   Documentation for `BirthdayTracker`.
   """
 
-  @doc """
-  add_birthdays
+@doc """
+hello/0 returns :world
 
-  ## Examples
+## Examples
 
-      iex> BirthdayTracker.start()
-  """
+    iex> BirthdayTracker.hello()
+    :world
+"""
+  def hello() do
+    :world
+  end
 
   defp enter_your_name do
     IO.gets("Anime Character Name Please: ") |> String.trim() |> check_exit()
@@ -125,7 +129,7 @@ defmodule BirthdayTracker do
     end
   end
 
-  def add_birthdays do
+  def add_birthdays(conn) do
     count = ListAgent.count_counter()
 
     IO.puts(count)
@@ -161,15 +165,15 @@ defmodule BirthdayTracker do
 
                       IO.inspect(anime_data)
                       ListAgent.add(anime_data)
-                      add_birthdays()
+                      add_birthdays(conn)
                   end
               end
           end
       end
     else
       IO.inspect(ListAgent.get_all())
+      BirthdayTrackerMongoData.insert_all(conn, ListAgent.get_all())
       BirthdayTrackerData.add_anime_birthday_data(ListAgent.get_all())
-
       BirthdayTrackerData.get_anime_all_data()
     end
   end
@@ -177,3 +181,5 @@ defmodule BirthdayTracker do
   # Handles Ctrl+D and "exit" input
   defp check_exit(input), do: input
 end
+
+#### 
