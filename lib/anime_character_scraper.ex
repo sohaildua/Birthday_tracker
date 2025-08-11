@@ -30,25 +30,32 @@ defmodule AnimeCharacter do
     product_items = Floki.find(document, "div.outframe .zero .zero")
 
     dec =
-      Enum.map(product_items, fn x ->
-        %{
-          birth_date: month() <> " " <> day(),
-          url_img: Floki.find(x, "li img") |> Floki.attribute("src"),
-          character_name:
-            Floki.find(x, "li .tile1bottom > div:first-child")
-            |> Enum.map(&Floki.text/1),
-          anime_name:
-            Floki.find(x, "li .tile1bottom > div:nth-child(2)")
-            |> Enum.map(&Floki.text/1)
-        }
-      end)
+      Enum.flat_map(product_items, fn x ->
+        birth_date = month() <> " " <> day()
+        url_imgs = Floki.find(x, "li .roll-in-once.thumb150") |> Floki.attribute("src")
 
-    Logger.info(dec)
+        character_names =
+          Floki.find(x, "li .tile1bottom > div:first-child")
+          |> Enum.map(&Floki.text/1)
+
+        anime_names =
+          Floki.find(x, "li .tile1bottom > div:nth-child(2)")
+          |> Enum.map(&Floki.text/1)
+
+        Enum.zip([url_imgs, character_names, anime_names])
+        |> Enum.map(fn {url_img, character_name, anime_name} ->
+          %{
+            birth_date: birth_date,
+            url_img: url_img,
+            character_name: character_name,
+            anime_name: anime_name
+          }
+        end)
+      end)
 
     # For demo, just return an empty item list and no new requests
     %Crawly.ParsedItem{
-      items: [],
-      requests: []
+      items: dec
     }
   end
 end
