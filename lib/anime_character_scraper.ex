@@ -1,31 +1,30 @@
 defmodule AnimeCharacter do
+  import DateUtils
+  import BirthdayTrackerMongoData
   use Crawly.Spider
 
   @impl Crawly.Spider
   def base_url(), do: "https://www.animecharactersdatabase.com/birthdays.php"
 
   @impl Crawly.Spider
-  def init() do
+  def init(opts) do
+    mongo_conn = Keyword.get(opts, :mongo_conn)
+
     [
       start_urls: [
         "https://www.animecharactersdatabase.com/birthdays.php?theday=#{day()}&themonth=#{month()}",
         "https://www.animecharactersdatabase.com/birthdays.php?x=30&theday=#{day()}&themonth=#{month()}"
-      ]
+      ],
+      # <-- this is crucial
+      mongo_conn: mongo_conn
     ]
-  end
-
-  defp day() do
-    today = Date.utc_today()
-    Calendar.strftime(today, "%-d")
-  end
-
-  defp month() do
-    today = Date.utc_today()
-    Calendar.strftime(today, "%B")
   end
 
   @impl Crawly.Spider
   def parse_item(response) do
+    mongo_conn = Application.get_env(:birthday_tracker, :mongo_conn)
+    Logger.info("Mongo conn inside spider: #{inspect(mongo_conn)}")
+
     {:ok, document} = Floki.parse_document(response.body)
     product_items = Floki.find(document, "div.outframe .zero .zero")
 
@@ -53,6 +52,7 @@ defmodule AnimeCharacter do
         end)
       end)
 
+    insert_all(mongo_conn, "web_anime_characters",dec)
     # For demo, just return an empty item list and no new requests
     %Crawly.ParsedItem{
       items: dec
